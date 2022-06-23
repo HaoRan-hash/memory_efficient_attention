@@ -1,4 +1,3 @@
-from glob import glob
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -83,7 +82,7 @@ class MultiheadAttention(nn.Module):
         row_sum = exp_chunk_attn_map.sum(dim=-1)
         return torch.bmm(exp_chunk_attn_map, chunk_v), row_sum, chunk_attn_map_max.squeeze(-1)
 
-    def _memory_effecient_attention(self, q, k, v):
+    def _memory_efficient_attention(self, q, k, v):
         src_len = q.shape[1]
         tgt_len = k.shape[1]
         q = q / math.sqrt(self.head_dim)
@@ -129,7 +128,7 @@ class MultiheadAttention(nn.Module):
         v = v.unflatten(2, (self.num_heads, self.head_dim)).flatten(1, 2).transpose(0, 1)
 
         if self.memory_efficient:
-            attn_output = self._memory_effecient_attention(q, k, v)   # attn_output.shape = (b * num_heads, l, head_dim)
+            attn_output = self._memory_efficient_attention(q, k, v)   # attn_output.shape = (b * num_heads, l, head_dim)
         else:
             attn_output = self._attention(q, k, v)
         
