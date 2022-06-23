@@ -20,11 +20,11 @@ class MultiheadAttention(nn.Module):
         assert self.head_dim * self.num_heads == self.embed_dim, 'embed_dim must be divisible by num_heads'
 
         if chunksize_q and chunksize_k:
-            self.memory_effecient = True
+            self.memory_efficient = True
             self.chunksize_q = chunksize_q
             self.chunksize_k = chunksize_k
         else:
-            self.memory_effecient = False
+            self.memory_efficient = False
         
         if self._qkv_same_embed_dim:
             self.in_proj_weight = nn.parameter.Parameter(torch.empty((3 * embed_dim, embed_dim), dtype=torch.float32))
@@ -128,7 +128,7 @@ class MultiheadAttention(nn.Module):
         k = k.unflatten(2, (self.num_heads, self.head_dim)).flatten(1, 2).transpose(0, 1)
         v = v.unflatten(2, (self.num_heads, self.head_dim)).flatten(1, 2).transpose(0, 1)
 
-        if self.memory_effecient:
+        if self.memory_efficient:
             attn_output = self._memory_effecient_attention(q, k, v)   # attn_output.shape = (b * num_heads, l, head_dim)
         else:
             attn_output = self._attention(q, k, v)
