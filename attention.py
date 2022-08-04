@@ -97,7 +97,10 @@ class MultiheadAttention(nn.Module):
             for j in range(tgt_len // self.chunksize_k):
                 chunk_k = k[:, j * self.chunksize_k:(j + 1) * self.chunksize_k, :]
                 chunk_v = v[:, j * self.chunksize_k:(j + 1) * self.chunksize_k, :]
-                chunk_outputs.append(checkpoint(self._chunk_compute, chunk_q, chunk_k, chunk_v, use_reentrant=False))
+                if self.training:
+                    chunk_outputs.append(checkpoint(self._chunk_compute, chunk_q, chunk_k, chunk_v))
+                else:
+                    chunk_outputs.append(self._chunk_compute(chunk_q, chunk_k, chunk_v))
             
             chunk_values, chunk_weights, chunk_max = list(map(torch.stack, zip(*chunk_outputs)))
             global_max, _ = chunk_max.max(dim=0, keepdim=True)
